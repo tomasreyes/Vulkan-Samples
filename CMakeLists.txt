@@ -34,11 +34,16 @@ endif()
 
 cmake_minimum_required(VERSION 3.16)
 
+project(vulkan_samples)
+
+if(VKB_GENERATE_ANTORA_SITE)
+    add_subdirectory(antora)
+else ()
 # search for Vulkan SDK
 find_package(Vulkan)
 
-if(VULKAN_FOUND)
-    if(NOT Vulkan_dxc_EXECUTABLE)
+if(Vulkan_FOUND)
+    if(NOT Vulkan_dxc_exe_FOUND)
         find_program(Vulkan_dxc_EXECUTABLE
                     NAMES dxc
                     HINTS
@@ -46,19 +51,20 @@ if(VULKAN_FOUND)
                     "$ENV{VULKAN_SDK}/bin"
                     )
     endif()
-    if(DEFINED Vulkan_dxc_EXECUTABLE)
-        message("Found DirectX Shader Compiler under ${Vulkan_dxc_EXECUTABLE}")
-    elseif()
-        message("Couldn't find DirectX Shader Compiler executable, make sure it is present in Vulkan SDK or add it manually via Vulkan_dxc_EXECUTABLE env variable")
+    if(Vulkan_dxc_EXECUTABLE)
+        message(STATUS "Found DirectX Shader Compiler under ${Vulkan_dxc_EXECUTABLE}")
+    else()
+        message(STATUS "Couldn't find DirectX Shader Compiler executable, make sure it is present in Vulkan SDK or add it manually via Vulkan_dxc_EXECUTABLE cmake variable. HLSL shaders won't be compiled.")
     endif()
-else()
-    message("VULKAN_SDK path not found, HLSL shaders won't be compiled")
 endif()
 
 # globally add VKB_DEBUG for the debug build
 add_compile_definitions($<$<CONFIG:DEBUG>:VKB_DEBUG>)
 
-project(vulkan_samples)
+# globally set -fno-strict-aliasing, needed due to using reinterpret_cast
+if (NOT MSVC)
+  add_compile_options(-fno-strict-aliasing)
+endif()
 
 if(MSVC AND (DEFINED CMAKE_C_COMPILER_LAUNCHER))
     message(DEBUG "Setting MSVC flags to /Z7 for ccache compatibility.  Current flags: ${CMAKE_CXX_FLAGS_DEBUG}")
@@ -94,11 +100,6 @@ add_subdirectory(components)
 # Add vulkan framework
 add_subdirectory(framework)
 
-if(VKB_BUILD_TESTS)
-    # Add vulkan tests
-    add_subdirectory(tests)
-endif()
-
 if(VKB_BUILD_SAMPLES)
     # Add vulkan samples
     add_subdirectory(samples)
@@ -106,5 +107,4 @@ endif()
 
 # Add vulkan app (runs all samples)
 add_subdirectory(app)
-
-add_subdirectory(antora)
+endif ()
