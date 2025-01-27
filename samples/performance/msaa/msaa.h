@@ -60,7 +60,7 @@
  * This sample shows how to use the extension to also resolve the depth
  * attachment on writeback and use it in a simple postprocessing pass.
  */
-class MSAASample : public vkb::VulkanSample<vkb::BindingType::C>
+class MSAASample : public vkb::VulkanSampleC
 {
   public:
 	MSAASample();
@@ -94,6 +94,13 @@ class MSAASample : public vkb::VulkanSample<vkb::BindingType::C>
 	 *        scene subpass and use them to apply a screen-based effect
 	 */
 	std::unique_ptr<vkb::PostProcessingPipeline> postprocessing_pipeline{};
+
+	/**
+	 * @brief Postprocessing pipeline using multi-sampled depth
+	 *        Read in the output color and depth attachments from the
+	 *        scene subpass and use them to apply a screen-based effect
+	 */
+	std::unique_ptr<vkb::PostProcessingPipeline> ms_depth_postprocessing_pipeline{};
 
 	/**
 	 * @brief Update MSAA options and accordingly set the load/store
@@ -166,14 +173,18 @@ class MSAASample : public vkb::VulkanSample<vkb::BindingType::C>
 	 *        renderpass since it only renders a texture on single full-screen
 	 *        triangle and MSAA only works on primitive edges
 	 */
-	void use_multisampled_color(std::unique_ptr<vkb::Subpass> &subpass, std::vector<vkb::LoadStoreInfo> &load_store, uint32_t resolve_attachment);
+	void use_multisampled_color(std::unique_ptr<vkb::rendering::SubpassC> &subpass,
+	                            std::vector<vkb::LoadStoreInfo>           &load_store,
+	                            uint32_t                                   resolve_attachment);
 
 	/**
 	 * @brief Sets the single-sampled output_attachment as the output attachment,
 	 *        disables color resolve and updates the load/store operations of
 	 *        color attachments
 	 */
-	void use_singlesampled_color(std::unique_ptr<vkb::Subpass> &subpass, std::vector<vkb::LoadStoreInfo> &load_store, uint32_t output_attachment);
+	void use_singlesampled_color(std::unique_ptr<vkb::rendering::SubpassC> &subpass,
+	                             std::vector<vkb::LoadStoreInfo>           &load_store,
+	                             uint32_t                                   output_attachment);
 
 	/**
 	 * @brief Submits a transfer operation to resolve the multisampled color attachment
@@ -203,13 +214,13 @@ class MSAASample : public vkb::VulkanSample<vkb::BindingType::C>
 	 *        attachment if depth resolve on writeback is supported
 	 *        Update the load/store operations of the depth attachments
 	 */
-	void store_multisampled_depth(std::unique_ptr<vkb::Subpass> &subpass, std::vector<vkb::LoadStoreInfo> &load_store);
+	void store_multisampled_depth(std::unique_ptr<vkb::rendering::SubpassC> &subpass, std::vector<vkb::LoadStoreInfo> &load_store);
 
 	/**
 	 * @brief Disables depth writeback resolve and updates the load/store operations of
 	 *        the depth resolve attachment
 	 */
-	void disable_depth_writeback_resolve(std::unique_ptr<vkb::Subpass> &subpass, std::vector<vkb::LoadStoreInfo> &load_store);
+	void disable_depth_writeback_resolve(std::unique_ptr<vkb::rendering::SubpassC> &subpass, std::vector<vkb::LoadStoreInfo> &load_store);
 
 	/**
 	 * @brief Selects the depth resolve mode (e.g. min or max sample values)
@@ -268,4 +279,4 @@ class MSAASample : public vkb::VulkanSample<vkb::BindingType::C>
 	VkResolveModeFlagBits last_gui_depth_resolve_mode{VK_RESOLVE_MODE_NONE};
 };
 
-std::unique_ptr<vkb::VulkanSample<vkb::BindingType::C>> create_msaa();
+std::unique_ptr<vkb::VulkanSampleC> create_msaa();
